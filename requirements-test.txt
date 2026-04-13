@@ -1,4 +1,8 @@
 locust~=1.6
+# Locust 1.6 exige Flask 1.1.2: stack compatible (evita resoluciones que suben deps y rompen imports).
+jinja2>=2.11.3,<3.1
+itsdangerous>=1.1.0,<2.0.0
+werkzeug>=1.0.1,<2.0.0
 coverage~=5.5
 pytest~=7.4.0
 pytest-cov~=4.1.0

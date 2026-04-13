@@ -1,0 +1,6 @@
+[run]
+source = challenge
+branch = true
+
+[report]
+omit = tests/*

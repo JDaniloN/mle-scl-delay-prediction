@@ -1,0 +1,73 @@
+# Continuous Delivery — build + push (tag = SHA) + actualización de Cloud Run.
+# La infra base sigue gestionada con Terraform en local o con backend remoto (GCS); aquí solo se
+# publica una imagen inmutable y se asigna al servicio existente (patrón habitual en MLOps).
+name: Continuous Delivery
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build, push y actualizar Cloud Run
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ vars.GCP_REGION }}
+      APP_NAME: ${{ vars.APP_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Comprobar variables de repositorio
+        run: |
+          test -n "${GCP_PROJECT_ID}" || { echo "::error::Configura GCP_PROJECT_ID en Settings → Secrets and variables → Actions → Variables"; exit 1; }
+          test -n "${GCP_REGION}" || { echo "::error::Configura GCP_REGION (ej. us-central1)"; exit 1; }
+          test -n "${APP_NAME}" || { echo "::error::Configura APP_NAME (ej. mlops-challenge-api)"; exit 1; }
+
+      - name: Autenticación a Google Cloud (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Configurar gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker login Artifact Registry
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
+      - name: Calcular URI de imagen
+        run: |
+          echo "IMAGE_URI=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${APP_NAME}-repo/delay-api:${GITHUB_SHA}" >> "${GITHUB_ENV}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build y push imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_URI }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Actualizar servicio Cloud Run con la nueva imagen
+        run: |
+          gcloud run services update "${APP_NAME}" \
+            --region="${GCP_REGION}" \
+            --project="${GCP_PROJECT_ID}" \
+            --image="${IMAGE_URI}" \
+            --quiet

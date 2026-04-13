@@ -1,0 +1,51 @@
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# Tests, cobertura y reportes (make model-test / api-test / stress-test, CI)
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+reports/
+*.cover
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Variables y credenciales locales (nunca subir claves GCP)
+.env
+.env.*
+!.env.example
+*-key.json
+*service-account*.json
+*credentials*.json
+
+# IDE / OS
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Herramientas opcionales
+.mypy_cache/
+.ruff_cache/
+
+# Terraform: ver también infra/.gitignore (.terraform/, *.tfstate, terraform.tfvars local)
