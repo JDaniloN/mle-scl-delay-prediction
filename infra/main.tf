@@ -50,8 +50,8 @@ resource "google_cloud_run_v2_service" "api" {
         }
         # true = facturación basada en solicitudes (CPU limitada fuera de peticiones; equivale a throttling).
         # false = CPU siempre asignada (facturación tipo instancia / “always on”).
-        cpu_idle            = var.cpu_request_based
-        startup_cpu_boost   = true
+        cpu_idle          = var.cpu_request_based
+        startup_cpu_boost = true
       }
 
       ports {
