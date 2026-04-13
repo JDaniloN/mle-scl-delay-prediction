@@ -65,10 +65,10 @@ async def validation_400(request: Request, exc: RequestValidationError) -> JSONR
 
 @app.get("/health", status_code=200)
 async def get_health() -> dict:
-    return {"status": "OK"}
+    return {"status": "bien"}
 
 
-@app.post("/predecir", status_code=200)
+@app.post("/predict", status_code=200)
 async def post_predict(body: PredictIn) -> dict:
     df = pd.DataFrame([f.dict() for f in body.flights])
     features = _MODEL.preprocess(df)
