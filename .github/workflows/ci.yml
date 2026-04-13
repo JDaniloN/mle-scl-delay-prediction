@@ -1,4 +1,4 @@
-# Continuous Integration — tests + validación de artefactos (MLOps: feedback rápido en cada PR).
+# CI: tests and artifact validation (MLOps: fast feedback on every PR to main).
 name: Continuous Integration
 
 on:
@@ -54,7 +54,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image (sin push)
+      - name: Build image (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -78,7 +78,7 @@ jobs:
       - name: Terraform fmt
         run: terraform fmt -check -recursive infra
 
-      - name: Terraform init (sin backend remoto)
+      - name: Terraform init (no remote backend)
         working-directory: infra
         run: terraform init -backend=false -input=false
 

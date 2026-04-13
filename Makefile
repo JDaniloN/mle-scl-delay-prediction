@@ -26,7 +26,7 @@ install:		## Install dependencies
 STRESS_URL = https://mlops-challenge-api-n7d53mhlmq-uc.a.run.app
 .PHONY: stress-test
 stress-test:
-	# change stress url to your deployed app 
+	# Cloud Run URL used for Part III stress testing.
 	mkdir reports || true
 	locust -f tests/stress/api_stress.py --print-stats --html reports/stress-test.html --run-time 60s --headless --users 100 --spawn-rate 1 -H $(STRESS_URL)
 

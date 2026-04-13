@@ -30,7 +30,7 @@ class TestModel(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.model = DelayModel()
-        # Raíz del repo: no usar "../data/..." con cwd en la raíz (rompe en Windows/pytest).
+        # Resolve data.csv via Path(__file__).parents[2]; ../data/... from repo root broke on Windows/pytest.
         data_path = Path(__file__).resolve().parents[2] / "data" / "data.csv"
         self.data = pd.read_csv(filepath_or_buffer=data_path, low_memory=False)
         

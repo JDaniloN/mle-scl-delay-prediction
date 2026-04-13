@@ -1,8 +1,8 @@
-# Infraestructura (Terraform)
+# Infrastructure (Terraform)
 
-## Validación local (sin aplicar en GCP)
+## Local validation (no apply to GCP)
 
-Con Terraform instalado y en el PATH:
+With Terraform installed and on your PATH:
 
 ```powershell
 cd infra
@@ -11,30 +11,30 @@ terraform validate
 terraform fmt -check
 ```
 
-Con backend GCS configurado en `provider.tf`, usa `terraform init` sin `-backend=false`.
+With a GCS backend configured in `provider.tf`, run `terraform init` without `-backend=false`.
 
-## Orden recomendado
+## Order of operations I followed
 
-1. Copia `terraform.tfvars.example` → `terraform.tfvars` y rellena `project_id` e `image`.
-2. Opcional: crea bucket de estado y descomenta `backend "gcs"` en `provider.tf`.
-3. `terraform init` y `terraform apply` **solo** si la imagen ya existe en Artifact Registry, o aplica en dos fases:
-   - Primera opción: `terraform apply -target=google_project_service.services -target=google_artifact_registry_repository.repo`, luego `docker build` / `docker push`, actualiza `image`, y `terraform apply` completo.
-   - Segunda opción: `docker push` primero y luego `terraform apply` de una vez.
-4. `terraform output api_endpoint` → copia la URL al `Makefile` (`STRESS_URL`) y al POST del challenge.
+1. Started from `terraform.tfvars.example` → `terraform.tfvars` with `project_id` and `image` filled in.
+2. Optional: state bucket and uncommented `backend "gcs"` block in `provider.tf`.
+3. `terraform init` and `terraform apply` once the image existed in Artifact Registry, or in two phases:
+   - First option: `terraform apply -target=google_project_service.services -target=google_artifact_registry_repository.repo`, then `docker build` / `docker push`, update `image`, then full `terraform apply`.
+   - Second option: `docker push` first, then a single `terraform apply`.
+4. `terraform output api_endpoint` → that URL went into the `Makefile` (`STRESS_URL`) and the challenge POST.
 
-La invocación pública se concede con **`roles/run.invoker`** para **`allUsers`** en `iam.tf` (válido en cualquier 5.x). Si subes el provider a **>= 5.43**, puedes optar por `invoker_iam_disabled = true` en el servicio y quitar ese binding.
+Public access is granted via **`roles/run.invoker`** for **`allUsers`** in `iam.tf` (valid on any 5.x). With provider **>= 5.43** you can use `invoker_iam_disabled = true` on the service and drop that binding.
 
-**CPU / facturación:** por defecto `cpu_request_based = true` en `variables.tf` → `cpu_idle = true` en Cloud Run v2 = **solo CPU durante el procesamiento de solicitudes** (modelo basado en solicitudes). Con `cpu_request_based = false` pasas a **CPU siempre asignada** (modelo tipo instancia).
+**CPU / billing:** by default `cpu_request_based = true` in `variables.tf` → `cpu_idle = true` in Cloud Run v2 = **CPU only while processing requests** (request-based model). With `cpu_request_based = false` you move to **always-allocated CPU** (instance-style model).
 
-## Imagen Docker
+## Docker image
 
-El nombre del repositorio en AR es `${app_name}-repo`. La URI de imagen debe usar el **repository_id** (p. ej. `mlops-challenge-api-repo`).
+The Artifact Registry repository name is `${app_name}-repo`. The image URI must use the **repository_id** (e.g. `mlops-challenge-api-repo`).
 
-Desde la **raíz del repositorio** (donde está el `Dockerfile`):
+From the **repository root** (where the `Dockerfile` lives):
 
 ```bash
 docker build -t REGION-docker.pkg.dev/PROJECT/mlops-challenge-api-repo/delay-api:1 .
 docker push REGION-docker.pkg.dev/PROJECT/mlops-challenge-api-repo/delay-api:1
 ```
 
-Ajusta `image` en `terraform.tfvars` al mismo valor.
+`image` in `terraform.tfvars` matches that tag/URI.

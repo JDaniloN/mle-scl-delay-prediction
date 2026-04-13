@@ -11,7 +11,7 @@ from pydantic import BaseModel, validator
 from challenge.model import DelayModel
 
 _DATA_CSV = Path(__file__).resolve().parent.parent / "data" / "data.csv"
-# Aerolíneas vistas en entrenamiento; se rellena al cargar el modelo.
+# Airlines observed in training; populated when the model loads from the CSV.
 _VALID_OPERA: set = set()
 
 
@@ -33,19 +33,19 @@ class FlightIn(BaseModel):
     @validator("MES")
     def mes_en_rango(cls, v: int) -> int:
         if not 1 <= v <= 12:
-            raise ValueError("MES fuera de rango")
+            raise ValueError("MES is out of range")
         return v
 
     @validator("TIPOVUELO")
     def tipo_valido(cls, v: str) -> str:
         if v not in ("I", "N"):
-            raise ValueError("TIPOVUELO debe ser I o N")
+            raise ValueError("TIPOVUELO must be I or N")
         return v
 
     @validator("OPERA")
     def opera_conocida(cls, v: str) -> str:
         if v not in _VALID_OPERA:
-            raise ValueError("OPERA no reconocida")
+            raise ValueError("Unknown OPERA")
         return v
 
 

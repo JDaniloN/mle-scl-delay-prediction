@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-# Imagen de producción para la API FastAPI (challenge.api:app).
-# Cloud Run inyecta la variable de entorno PORT; por defecto 8080.
+# Production image for the FastAPI app (challenge.api:app).
+# Cloud Run injects PORT; defaults to 8080.
 
 FROM python:3.10-slim-bookworm
 
@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Dependencias solo si alguna wheel falla en slim (descomenta si `pip install` falla al compilar):
+# Optional build-essential block: enable only if a wheel fails to build on slim.
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     build-essential \
 #     && rm -rf /var/lib/apt/lists/*
@@ -33,7 +33,7 @@ USER app
 
 EXPOSE 8080
 
-# El arranque carga el CSV y entrena el modelo al importar el módulo: el primer /health puede tardar.
+# Import loads the CSV and fits the model; the first /health check may be slow.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
     CMD python -c "import os, urllib.request; p=os.environ.get('PORT', '8080'); urllib.request.urlopen('http://127.0.0.1:%s/health' % p)"
 

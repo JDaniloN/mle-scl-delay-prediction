@@ -3,7 +3,7 @@ from sklearn.linear_model import LogisticRegression
 
 from typing import List, Tuple, Union
 
-# Mismas 10 columnas que el notebook (importancia) y que exigen los tests.
+# Same ten features as in the notebook (importance) and those asserted by the challenge.
 TOP_10_FEATURES = [
     "OPERA_Latin American Wings",
     "MES_7",
@@ -20,17 +20,17 @@ TOP_10_FEATURES = [
 
 class DelayModel:
     def __init__(self):
-        # El estimador entrenado debe vivir aquí (lo usan los tests vía _model.predict).
+        # `self._model` holds the fitted estimator; tests access it via `_model.predict`.
         self._model = None
 
     def _ensure_delay(self, data: pd.DataFrame) -> pd.DataFrame:
-        """El CSV del challenge trae Fecha-I / Fecha-O; delay se deriva como en exploration.ipynb."""
+        """Challenge CSV supplies Fecha-I / Fecha-O; delay is derived as in exploration.ipynb."""
         df = data.copy()
         if "delay" in df.columns:
             return df
         if "Fecha-I" not in df.columns or "Fecha-O" not in df.columns:
             raise ValueError(
-                "Faltan columnas: se necesita 'delay' o bien 'Fecha-I' y 'Fecha-O' para calcularlo."
+                "Missing columns: need either 'delay' or both 'Fecha-I' and 'Fecha-O' to compute it."
             )
         df["Fecha-I"] = pd.to_datetime(df["Fecha-I"])
         df["Fecha-O"] = pd.to_datetime(df["Fecha-O"])
@@ -53,7 +53,7 @@ class DelayModel:
 
     def _features_only(self, data: pd.DataFrame) -> pd.DataFrame:
         wide = self._raw_dummies(data)
-        # Solo las 10 columnas productivas; el resto se ignora como en el notebook.
+        # Keep only the ten productive columns; drop the rest as in the notebook.
         return wide.reindex(columns=TOP_10_FEATURES, fill_value=0).astype(float)
 
     def preprocess(
@@ -65,7 +65,7 @@ class DelayModel:
             return self._features_only(data)
         df = self._ensure_delay(data)
         if target_column not in df.columns:
-            raise ValueError(f"Columna objetivo ausente: {target_column}")
+            raise ValueError(f"Target column missing: {target_column}")
         features = self._features_only(df)
         target = df[[target_column]].copy()
         return features, target
@@ -75,7 +75,7 @@ class DelayModel:
         n_y0 = int((y == 0).sum())
         n_y1 = int((y == 1).sum())
         n = len(y)
-        # Igual que en exploration.ipynb (sección logística con balanceo).
+        # Same recipe as exploration.ipynb (logistic regression with class balancing).
         class_weight = {1: n_y0 / n, 0: n_y1 / n}
         self._model = LogisticRegression(
             random_state=42,
@@ -86,6 +86,6 @@ class DelayModel:
 
     def predict(self, features: pd.DataFrame) -> List[int]:
         if self._model is None:
-            raise ValueError("El modelo no está entrenado.")
+            raise ValueError("Model has not been fitted.")
         preds = self._model.predict(features)
         return [int(x) for x in preds]

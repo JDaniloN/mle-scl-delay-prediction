@@ -1,6 +1,5 @@
-# Continuous Delivery — build + push (tag = SHA) + actualización de Cloud Run.
-# La infra base sigue gestionada con Terraform en local o con backend remoto (GCS); aquí solo se
-# publica una imagen inmutable y se asigna al servicio existente (patrón habitual en MLOps).
+# CD: build + push (tag = SHA) + Cloud Run rollout.
+# Base infra is managed via Terraform (local or GCS backend); this workflow only pushes the image and updates the service.
 name: Continuous Delivery
 
 on:
@@ -18,7 +17,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Build, push y actualizar Cloud Run
+    name: Build, push, and update Cloud Run
     runs-on: ubuntu-latest
     env:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
@@ -28,33 +27,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Comprobar variables de repositorio
+      - name: Verify repository variables
         run: |
-          test -n "${GCP_PROJECT_ID}" || { echo "::error::Configura GCP_PROJECT_ID en Settings → Secrets and variables → Actions → Variables"; exit 1; }
-          test -n "${GCP_REGION}" || { echo "::error::Configura GCP_REGION (ej. us-central1)"; exit 1; }
-          test -n "${APP_NAME}" || { echo "::error::Configura APP_NAME (ej. mlops-challenge-api)"; exit 1; }
+          test -n "${GCP_PROJECT_ID}" || { echo "::error::Missing GCP_PROJECT_ID in repository Actions variables"; exit 1; }
+          test -n "${GCP_REGION}" || { echo "::error::Missing GCP_REGION (e.g. us-central1)"; exit 1; }
+          test -n "${APP_NAME}" || { echo "::error::Missing APP_NAME (e.g. mlops-challenge-api)"; exit 1; }
 
-      - name: Autenticación a Google Cloud (OIDC)
+      - name: Authenticate to Google Cloud (OIDC)
         id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
 
-      - name: Configurar gcloud
+      - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Docker login Artifact Registry
         run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
 
-      - name: Calcular URI de imagen
+      - name: Compute image URI
         run: |
           echo "IMAGE_URI=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${APP_NAME}-repo/delay-api:${GITHUB_SHA}" >> "${GITHUB_ENV}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build y push imagen
+      - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -64,7 +63,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Actualizar servicio Cloud Run con la nueva imagen
+      - name: Update Cloud Run service with new image
         run: |
           gcloud run services update "${APP_NAME}" \
             --region="${GCP_REGION}" \

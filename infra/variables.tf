@@ -1,57 +1,57 @@
 variable "project_id" {
   type        = string
-  description = "ID del proyecto de Google Cloud"
+  description = "Google Cloud project ID"
 }
 
 variable "region" {
   type        = string
-  description = "Región de GCP para Artifact Registry y Cloud Run"
+  description = "GCP region for Artifact Registry and Cloud Run"
   default     = "us-central1"
 }
 
 variable "app_name" {
   type        = string
-  description = "Nombre base del servicio Cloud Run y prefijos de recursos relacionados"
+  description = "Base name for the Cloud Run service and related resource prefixes"
   default     = "mlops-challenge-api"
 }
 
 variable "image" {
   type        = string
-  description = "URI completa de la imagen en Artifact Registry (incluye tag), p. ej. REGION-docker.pkg.dev/PROJECT/REPO_ID/delay-api:sha"
+  description = "Full image URI in Artifact Registry (including tag), e.g. REGION-docker.pkg.dev/PROJECT/REPO_ID/delay-api:sha"
 }
 
 variable "service_cpu" {
   type        = string
-  description = "CPU por instancia (Cloud Run v2)"
+  description = "CPU per instance (Cloud Run v2)"
   default     = "1"
 }
 
 variable "service_memory" {
   type        = string
-  description = "Memoria por instancia (arranque con CSV + fit puede ser pesado)"
+  description = "Memory per instance (CSV load + fit at startup can be heavy)"
   default     = "2Gi"
 }
 
 variable "min_instances" {
   type        = number
-  description = "Instancias mínimas (1 reduce cold start en revisión; 0 ahorra coste)"
+  description = "Minimum instances (1 reduces cold start during review; 0 saves cost)"
   default     = 1
 }
 
 variable "max_instances" {
   type        = number
-  description = "Tope de instancias concurrentes"
+  description = "Upper bound on concurrent instances"
   default     = 3
 }
 
 variable "service_timeout" {
   type        = string
-  description = "Timeout máximo por petición (incluye arranque lento del contenedor)"
+  description = "Maximum request timeout (includes slow container startup)"
   default     = "300s"
 }
 
 variable "cpu_request_based" {
   type        = bool
-  description = "true: CPU solo durante solicitudes (facturación basada en solicitudes). false: CPU siempre asignada (facturación por tiempo de instancia)."
+  description = "true: CPU only while handling requests (request-based billing). false: CPU always allocated (instance-time billing)."
   default     = true
 }

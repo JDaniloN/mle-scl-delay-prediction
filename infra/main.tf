@@ -18,7 +18,7 @@ resource "google_artifact_registry_repository" "repo" {
   location      = var.region
   repository_id = "${var.app_name}-repo"
   format        = "DOCKER"
-  description   = "Imágenes Docker — API ML retraso vuelos SCL"
+  description   = "Docker images — SCL flight delay ML API"
 
   depends_on = [google_project_service.services]
 }
@@ -28,8 +28,8 @@ resource "google_cloud_run_v2_service" "api" {
   location = var.region
 
   ingress = "INGRESS_TRAFFIC_ALL"
-  # Nota: `deletion_protection` e `invoker_iam_disabled` existen en versiones recientes del provider
-  # (p. ej. google >= ~5.43). Con ~> 5.0 puedes quedar en 5.0.x sin esos campos; la API pública va en iam.tf.
+  # Note: `deletion_protection` and `invoker_iam_disabled` exist on recent provider versions
+  # (e.g. google >= ~5.43). With ~> 5.0 you may stay on 5.0.x without those fields; public access is wired in iam.tf.
 
   template {
     service_account = google_service_account.api_sa.email
@@ -48,8 +48,8 @@ resource "google_cloud_run_v2_service" "api" {
           cpu    = var.service_cpu
           memory = var.service_memory
         }
-        # true = facturación basada en solicitudes (CPU limitada fuera de peticiones; equivale a throttling).
-        # false = CPU siempre asignada (facturación tipo instancia / “always on”).
+        # true = request-based billing (CPU throttled outside requests).
+        # false = CPU always allocated (instance-style / “always on” billing).
         cpu_idle          = var.cpu_request_based
         startup_cpu_boost = true
       }

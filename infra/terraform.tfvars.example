@@ -1,20 +1,20 @@
-# Copia a terraform.tfvars y rellena (terraform.tfvars suele ignorarse en git en repos públicos).
-# project_id = "tu-proyecto-gcp"
+# Template: copy to terraform.tfvars and fill in (terraform.tfvars is often gitignored in public repos).
+# project_id = "your-gcp-project"
 # region     = "us-central1"
 # app_name   = "mlops-challenge-api"
 #
-# Debes hacer docker push ANTES del primer apply con una imagen que exista en AR:
-# image = "us-central1-docker.pkg.dev/tu-proyecto-gcp/mlops-challenge-api-repo/delay-api:1"
+# First apply assumes an image already pushed to AR (docker push beforehand):
+# image = "us-central1-docker.pkg.dev/your-gcp-project/mlops-challenge-api-repo/delay-api:1"
 
 project_id = "YOUR_GCP_PROJECT_ID"
 region     = "us-central1"
 app_name   = "mlops-challenge-api"
 
-# Sustituye PROJECT y TAG tras el primer push (debe coincidir con repository_id = "${app_name}-repo")
+# PROJECT and TAG after the first push (must match repository_id = "${app_name}-repo")
 image = "us-central1-docker.pkg.dev/YOUR_GCP_PROJECT_ID/mlops-challenge-api-repo/delay-api:1"
 
-# Opcional: durante revisión del challenge, sube a 1 para evitar cold start en Locust
+# Optional: bump to 1 during challenge review to avoid cold start in Locust
 # min_instances = 1
 
-# Por defecto true = basado en solicitudes. Para CPU siempre asignada: cpu_request_based = false
+# Default true = request-based. For always-allocated CPU: cpu_request_based = false
 # cpu_request_based = true

@@ -4,14 +4,14 @@ terraform {
   required_providers {
     google = {
       source = "hashicorp/google"
-      # >= 5.43 añade flags útiles en Cloud Run v2 (`invoker_iam_disabled`, `deletion_protection`).
-      # Si fijas solo ~> 5.0, Terraform puede quedarse en 5.0.x y esos argumentos fallan en validate.
+      # >= 5.43 adds useful Cloud Run v2 flags (`invoker_iam_disabled`, `deletion_protection`).
+      # With only ~> 5.0, Terraform may resolve to 5.0.x and those arguments fail validation.
       version = ">= 5.43.0, < 7.0.0"
     }
   }
 
-  # Tras crear el bucket (gcloud storage buckets create ...), descomenta y ajusta.
-  # Terraform no admite variables en backend.
+  # Optional GCS backend: once the bucket exists (gcloud storage buckets create ...), uncomment the `backend` block with the right bucket/prefix.
+  # Terraform does not allow variables in backend blocks.
   # backend "gcs" {
   #   bucket = "delaybucket-tfstate"
   #   prefix = "delay-api/terraform"
