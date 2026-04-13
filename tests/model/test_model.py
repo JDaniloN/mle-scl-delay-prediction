@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+
 import pandas as pd
 
 from sklearn.metrics import classification_report
@@ -28,7 +30,9 @@ class TestModel(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.model = DelayModel()
-        self.data = pd.read_csv(filepath_or_buffer="../data/data.csv")
+        # Raíz del repo: no usar "../data/..." con cwd en la raíz (rompe en Windows/pytest).
+        data_path = Path(__file__).resolve().parents[2] / "data" / "data.csv"
+        self.data = pd.read_csv(filepath_or_buffer=data_path, low_memory=False)
         
 
     def test_model_preprocess_for_training(
@@ -90,6 +94,12 @@ class TestModel(unittest.TestCase):
     def test_model_predict(
         self
     ):
+        features_train, target_train = self.model.preprocess(
+            data=self.data,
+            target_column="delay",
+        )
+        self.model.fit(features=features_train, target=target_train)
+
         features = self.model.preprocess(
             data=self.data
         )
