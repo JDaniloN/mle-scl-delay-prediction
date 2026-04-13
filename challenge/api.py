@@ -65,7 +65,7 @@ async def validation_400(request: Request, exc: RequestValidationError) -> JSONR
 
 @app.get("/health", status_code=200)
 async def get_health() -> dict:
-    return {"status": "bien"}
+    return {"status": "OK"}
 
 
 @app.post("/predict", status_code=200)
